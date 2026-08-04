@@ -1,164 +1,226 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PakaZita - Frutos Rojos & Antojitos</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PakaZita - Frutas Frescas</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;800&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--cream:#F6EEE1;--cream-light:#FFFDF9;--terracotta:#C1652F;--terracotta-dark:#A8501F;--border:#E6D8C3;--text:#3B2A20;--text-soft:#7A6552;--text-faint:#A08A73;--error:#B3401F;}
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--text);}
+  .outfit{font-family:'Outfit',sans-serif;}
+  .wrap{max-width:480px;margin:0 auto;padding:24px 16px 100px;}
+  header{text-align:center;margin-bottom:24px;}
+  header .icon{width:56px;height:56px;border-radius:50%;background:var(--terracotta);display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:26px;}
+  header h1{font-size:24px;font-weight:800;margin:4px 0;}
+  header p{color:var(--text-soft);font-size:14px;margin:0;}
 
-  <!-- Encabezado / Navbar -->
-  <header class="bg-rose-600 text-white shadow-md sticky top-0 z-50">
-    <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
-      <h1 class="text-2xl font-bold flex items-center gap-2">
-        🍓 <span>PakaZita</span>
-      </h1>
-      <div class="flex items-center gap-4">
-        <button onclick="toggleCarrito()" class="relative bg-rose-700 hover:bg-rose-800 text-white px-4 py-2 rounded-xl transition flex items-center gap-2 font-medium">
-          🛒 Carrito
-          <span id="cart-count" class="bg-white text-rose-600 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
-        </button>
-      </div>
-    </div>
+  .producto{display:flex;align-items:center;gap:12px;background:var(--cream-light);border:2px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px;}
+  .producto .emoji{font-size:28px;width:40px;text-align:center;}
+  .producto .info{flex:1;}
+  .producto .info .nombre{font-weight:700;font-size:15px;}
+  .producto .info .precio{color:var(--terracotta);font-weight:700;font-size:14px;}
+  .producto .info .desc{color:var(--text-faint);font-size:12px;}
+  .qty-control{display:flex;align-items:center;gap:8px;}
+  .qty-btn{width:30px;height:30px;border-radius:8px;border:2px solid var(--border);background:var(--cream-light);font-weight:800;font-size:16px;color:var(--terracotta);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+  .qty-val{min-width:20px;text-align:center;font-weight:700;font-size:14px;}
+
+  .cart-bar{position:fixed;bottom:0;left:0;right:0;background:var(--terracotta);color:#FFF9F2;padding:14px 20px;display:none;align-items:center;justify-content:space-between;box-shadow:0 -6px 20px rgba(0,0,0,0.15);}
+  .cart-bar.show{display:flex;}
+  .cart-bar button{background:#FFF9F2;color:var(--terracotta);border:none;border-radius:10px;padding:10px 16px;font-weight:700;font-family:inherit;cursor:pointer;}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(59,42,32,0.5);align-items:flex-end;justify-content:center;z-index:10;}
+  .modal-overlay.show{display:flex;}
+  .modal{background:var(--cream);border-radius:20px 20px 0 0;padding:24px;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;}
+  .modal h2{font-size:19px;font-weight:800;margin:0 0 14px;}
+  .resumen-item{display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-bottom:1px solid var(--border);}
+  .total-row{display:flex;justify-content:space-between;font-weight:800;font-size:16px;margin:12px 0;}
+  label{display:block;margin-bottom:14px;}
+  label span{font-size:13px;color:var(--text-soft);display:block;margin-bottom:6px;}
+  input,textarea{width:100%;padding:10px 12px;border-radius:10px;border:2px solid var(--border);font-size:15px;background:var(--cream-light);font-family:inherit;}
+  textarea{resize:vertical;min-height:60px;}
+  .btn-primary{width:100%;padding:14px;border-radius:14px;border:none;background:var(--terracotta);color:#FFF9F2;font-weight:700;font-size:16px;cursor:pointer;}
+  .btn-secondary{width:100%;padding:12px;border-radius:12px;border:none;background:none;color:var(--text-soft);font-weight:600;font-size:14px;margin-top:8px;cursor:pointer;}
+  .error-text{color:var(--error);font-size:13px;margin-bottom:10px;}
+  .aviso{background:#FBE9DC;border-radius:10px;padding:10px 12px;font-size:12px;color:var(--terracotta-dark);margin-bottom:16px;}
+  .thanks{text-align:center;padding:40px 10px;}
+  .thanks .big{font-size:44px;margin-bottom:10px;}
+  .loading{text-align:center;color:var(--text-faint);padding:20px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <div class="icon">🐱</div>
+    <h1 class="outfit">PakaZita</h1>
+    <p>Fruta fresca en Izúcar de Matamoros 🍓</p>
   </header>
 
-  <!-- Contenido Principal -->
-  <main class="max-w-6xl mx-auto px-4 py-8 flex-grow w-full">
-    <div class="mb-8 text-center">
-      <h2 class="text-3xl font-extrabold text-slate-900 mb-2">Nuestro Menú</h2>
-      <p class="text-slate-500">Selecciona tus antojitos preferidos y realiza tu pedido al instante.</p>
+  <div class="aviso">📦 Pedidos bajo apartado — solo compramos lo que ya está pedido, así te llega siempre fresca. Pagas al recibir, en efectivo.</div>
+
+  <div id="productos-list"><div class="loading">Cargando catálogo...</div></div>
+</div>
+
+<div class="cart-bar" id="cart-bar">
+  <span id="cart-summary">0 productos</span>
+  <button onclick="openModal()">Ver pedido</button>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div id="modal-resumen">
+      <h2 class="outfit">Tu pedido</h2>
+      <div id="resumen-items"></div>
+      <div class="total-row"><span>Total estimado</span><span id="total-monto">$0.00</span></div>
+      <label><span>Tu nombre</span><input type="text" id="nombre-cliente" placeholder="Ej. María López"></label>
+      <label><span>Tu WhatsApp</span><input type="tel" id="telefono-cliente" placeholder="Ej. 2431234567"></label>
+      <label><span>Notas (opcional)</span><textarea id="notas" placeholder="Ej. entregar por la tarde, zona centro..."></textarea></label>
+      <p class="error-text" id="error-text" style="display:none;"></p>
+      <button class="btn-primary outfit" id="btn-confirmar" onclick="enviarPedido()">Confirmar pedido</button>
+      <button class="btn-secondary" onclick="closeModal()">Seguir viendo el catálogo</button>
     </div>
-
-    <!-- Grid de Productos -->
-    <div id="productos-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-      <p class="col-span-full text-center text-slate-400">Cargando productos del servidor...</p>
-    </div>
-  </main>
-
-  <!-- Sidebar del Carrito (Modal Deslizante) -->
-  <div id="carrito-modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden transition-opacity">
-    <div class="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-2xl flex flex-col justify-between p-6">
-      <div>
-        <div class="flex justify-between items-center pb-4 border-b">
-          <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">🛍️ Tu Pedido</h3>
-          <button onclick="toggleCarrito()" class="text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
-        </div>
-        <div id="carrito-items" class="mt-4 space-y-4 max-h-[50vh] overflow-y-auto">
-          <p class="text-slate-400 text-center py-8">El carrito está vacío.</p>
-        </div>
-      </div>
-
-      <div class="border-t pt-4 space-y-4">
-        <div class="flex justify-between text-lg font-bold text-slate-900">
-          <span>Total:</span>
-          <span id="carrito-total">$0.00</span>
-        </div>
-        <button onclick="enviarPedido()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-200">
-          Confirmar y Hacer Pedido
-        </button>
+    <div id="modal-thanks" style="display:none;">
+      <div class="thanks">
+        <div class="big">🐱🍓</div>
+        <h2 class="outfit">¡Pedido recibido!</h2>
+        <p style="color:var(--text-soft);">Te confirmamos por WhatsApp los detalles y el día de entrega. ¡Gracias por tu preferencia!</p>
+        <button class="btn-primary outfit" style="margin-top:16px;" onclick="location.reload()">Cerrar</button>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    const API_URL = 'https://frutos-rojos-pakazita1.onrender.com/api';
-    let carrito = [];
+<script>
+let productos = [];
+let cart = {};
 
-    // Cargar productos desde la API
-    async function cargarProductos() {
-      try {
-        const res = await fetch(`${API_URL}/productos`);
-        const productos = await res.json();
-        const grid = document.getElementById('productos-grid');
-        grid.innerHTML = '';
+async function cargarProductos() {
+  try {
+    const res = await fetch('/api/productos');
+    const data = await res.json();
+    if (!data.ok) throw new Error();
+    productos = data.productos;
+    renderProductos();
+  } catch (e) {
+    document.getElementById('productos-list').innerHTML = '<p class="loading">No se pudo cargar el catálogo. Intenta recargar la página.</p>';
+  }
+}
 
-        productos.forEach(p => {
-          grid.innerHTML += `
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition flex flex-col justify-between">
-              <div class="p-5">
-                <div class="w-full h-40 bg-rose-50 rounded-xl mb-4 flex items-center justify-center text-4xl">🍓</div>
-                <h3 class="text-lg font-bold text-slate-800">${p.nombre}</h3>
-                <p class="text-slate-500 text-sm mt-1">${p.descripcion || ''}</p>
-              </div>
-              <div class="p-5 pt-0 flex justify-between items-center border-t border-slate-50 mt-4">
-                <span class="text-xl font-extrabold text-rose-600">$${parseFloat(p.precio).toFixed(2)}</span>
-                <button onclick="agregarAlCarrito(${p.id}, '${p.nombre}', ${p.precio})" 
-                        class="bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold px-4 py-2 rounded-xl transition text-sm">
-                  + Agregar
-                </button>
-              </div>
-            </div>
-          `;
-        });
-      } catch (err) {
-        document.getElementById('productos-grid').innerHTML = '<p class="col-span-full text-center text-rose-500 font-medium">Error al conectar con el servidor.</p>';
-      }
+function renderProductos() {
+  const list = document.getElementById('productos-list');
+  if (productos.length === 0) {
+    list.innerHTML = '<p class="loading">Aún no hay productos disponibles. Vuelve pronto 🍓</p>';
+    return;
+  }
+  list.innerHTML = productos.map(p => `
+    <div class="producto">
+      <div class="emoji">${p.emoji || '🍏'}</div>
+      <div class="info">
+        <div class="nombre">${p.nombre}</div>
+        <div class="precio">$${Number(p.precio).toFixed(2)} / ${p.unidad}</div>
+        ${p.descripcion ? `<div class="desc">${p.descripcion}</div>` : ''}
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="changeQty(${p.id}, -1)">−</button>
+        <div class="qty-val" id="qty-${p.id}">0</div>
+        <button class="qty-btn" onclick="changeQty(${p.id}, 1)">+</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function changeQty(id, delta) {
+  cart[id] = Math.max(0, (cart[id] || 0) + delta);
+  document.getElementById('qty-' + id).textContent = cart[id];
+  updateCartBar();
+}
+
+function updateCartBar() {
+  const totalItems = Object.values(cart).reduce((a,b) => a+b, 0);
+  const bar = document.getElementById('cart-bar');
+  if (totalItems > 0) {
+    bar.classList.add('show');
+    document.getElementById('cart-summary').textContent = totalItems + (totalItems === 1 ? ' producto' : ' productos');
+  } else {
+    bar.classList.remove('show');
+  }
+}
+
+function calcTotal() {
+  let total = 0;
+  for (const id in cart) {
+    if (cart[id] > 0) {
+      const p = productos.find(x => x.id == id);
+      total += p.precio * cart[id];
     }
+  }
+  return total;
+}
 
-    function agregarAlCarrito(id, nombre, precio) {
-      carrito.push({ id, nombre, precio: parseFloat(precio) });
-      actualizarCarrito();
+function openModal() {
+  const itemsDiv = document.getElementById('resumen-items');
+  itemsDiv.innerHTML = '';
+  for (const id in cart) {
+    if (cart[id] > 0) {
+      const p = productos.find(x => x.id == id);
+      const row = document.createElement('div');
+      row.className = 'resumen-item';
+      row.innerHTML = `<span>${p.emoji || ''} ${p.nombre} x${cart[id]}</span><span>$${(p.precio*cart[id]).toFixed(2)}</span>`;
+      itemsDiv.appendChild(row);
     }
+  }
+  document.getElementById('total-monto').textContent = '$' + calcTotal().toFixed(2);
+  document.getElementById('modal-resumen').style.display = 'block';
+  document.getElementById('modal-thanks').style.display = 'none';
+  document.getElementById('modal-overlay').classList.add('show');
+}
 
-    function actualizarCarrito() {
-      document.getElementById('cart-count').innerText = carrito.length;
-      const itemsContainer = document.getElementById('carrito-items');
-      const totalContainer = document.getElementById('carrito-total');
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('show');
+}
 
-      if (carrito.length === 0) {
-        itemsContainer.innerHTML = '<p class="text-slate-400 text-center py-8">El carrito está vacío.</p>';
-        totalContainer.innerText = '$0.00';
-        return;
-      }
+async function enviarPedido() {
+  const errorEl = document.getElementById('error-text');
+  const nombre = document.getElementById('nombre-cliente').value.trim();
+  const telefono = document.getElementById('telefono-cliente').value.trim();
+  const notas = document.getElementById('notas').value.trim();
+  errorEl.style.display = 'none';
 
-      let total = 0;
-      itemsContainer.innerHTML = carrito.map((item, index) => {
-        total += item.precio;
-        return `
-          <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
-            <div>
-              <p class="font-bold text-slate-700 text-sm">${item.nombre}</p>
-              <p class="text-rose-600 text-xs font-semibold">$${item.precio.toFixed(2)}</p>
-            </div>
-            <button onclick="eliminarDelCarrito(${index})" class="text-slate-400 hover:text-rose-600 text-sm">✕</button>
-          </div>
-        `;
-      }).join('');
+  const items = Object.entries(cart).filter(([id,q]) => q > 0).map(([id,q]) => {
+    const p = productos.find(x => x.id == id);
+    return {producto_id: p.id, nombre_producto: p.nombre, cantidad: q, precio_unitario: p.precio};
+  });
 
-      totalContainer.innerText = `$${total.toFixed(2)}`;
-    }
+  if (items.length === 0) { errorEl.textContent = 'Agrega al menos un producto.'; errorEl.style.display='block'; return; }
+  if (!nombre) { errorEl.textContent = 'Escribe tu nombre.'; errorEl.style.display='block'; return; }
+  if (!telefono) { errorEl.textContent = 'Escribe tu WhatsApp.'; errorEl.style.display='block'; return; }
 
-    function eliminarDelCarrito(index) {
-      carrito.splice(index, 1);
-      actualizarCarrito();
-    }
+  const btn = document.getElementById('btn-confirmar');
+  btn.disabled = true; btn.textContent = 'Enviando...';
 
-    function toggleCarrito() {
-      document.getElementById('carrito-modal').classList.toggle('hidden');
-    }
+  try {
+    const res = await fetch('/api/pedidos', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({nombre_cliente: nombre, telefono, notas, items})
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Error');
+    document.getElementById('modal-resumen').style.display = 'none';
+    document.getElementById('modal-thanks').style.display = 'block';
+    cart = {};
+    updateCartBar();
+  } catch(e) {
+    errorEl.textContent = 'Hubo un problema enviando tu pedido. Intenta de nuevo.';
+    errorEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = 'Confirmar pedido';
+  }
+}
 
-    async function enviarPedido() {
-      if (carrito.length === 0) return alert('El carrito está vacío');
-      const total = carrito.reduce((acc, i) => acc + i.precio, 0);
-
-      try {
-        const res = await fetch(`${API_URL}/pedidos`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ total })
-        });
-        const data = await res.json();
-        alert(`🎉 ¡Pedido #${data.pedidoId} registrado con éxito!`);
-        carrito = [];
-        actualizarCarrito();
-        toggleCarrito();
-      } catch (err) {
-        alert('Ocurrió un error al guardar el pedido');
-      }
-    }
-
-    cargarProductos();
-  </script>
+cargarProductos();
+</script>
 </body>
 </html>
